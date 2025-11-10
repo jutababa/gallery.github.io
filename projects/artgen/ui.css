@@ -1,0 +1,149 @@
+/* General */
+body {
+  margin: 0;
+  font-family: "Helvetica", sans-serif;
+  background-color: #0a0f30; /* Dark navy */
+  overflow: hidden;
+}
+
+/* Topbar */
+#topbar {
+  display: flex;
+  background: linear-gradient(to bottom, #d0d0d0, #a0a0a0);
+  height: 26px;
+  align-items: center;
+  padding: 0 10px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  position: fixed;
+  width: 100%;
+  z-index: 10;
+}
+
+/* Menu items */
+.menu {
+  position: relative;
+  margin-right: 16px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.menu span {
+  padding: 2px 6px;
+  border-radius: 2px;
+  transition: background 0.2s;
+}
+
+.menu span:hover {
+  background-color: #b0b0b0;
+}
+
+/* Dropdown menu */
+.dropdown {
+  display: block;
+  position: absolute;
+  top: 26px;
+  left: 0;
+  background: linear-gradient(to bottom, #e0e0e0, #b0b0b0);
+  border: 1px solid #888;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+  min-width: 120px;
+  border-radius: 2px;
+  overflow: hidden;
+  opacity: 0;
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 0.25s ease-out, opacity 0.25s ease-out;
+  z-index: 20;
+}
+
+.dropdown div {
+  padding: 5px 10px;
+  font-size: 13px;
+  transition: background 0.2s;
+}
+
+.dropdown div:hover {
+  background-color: #b0b0b0;
+}
+
+.menu:hover .dropdown {
+  opacity: 1;
+  transform: scaleY(1);
+}
+
+/* Canvas */
+canvas {
+  display: block;
+  position: absolute;
+  top: 26px;
+  left: 0;
+  width: 100%;
+  height: calc(100% - 26px);
+}
+
+/* Add parallax layer depth effect if needed */
+.layer {
+  position: absolute;
+  top: 26px; /* below topbar */
+  left: 0;
+  width: 100%;
+  height: calc(100% - 26px);
+  pointer-events: none; /* ensures canvas doesn’t block menu */
+}
+
+/* Optional cursive font for future signature */
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script&display=swap');
+
+/* NOTES SYSTEM */
+#notes-toggle {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  width: 40px;
+  height: 40px;
+  background: #fffa77;
+  border: 2px solid #999;
+  box-shadow: 2px 2px #fff, -2px -2px #999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 24px;
+  transition: transform 0.3s;
+  z-index: 9999;
+}
+
+#notes-toggle:hover {
+  transform: scale(1.2);
+}
+
+#notes {
+  position: fixed;
+  bottom: -320px;
+  right: 10px;
+  width: fit-content;
+  height: 250px;
+  background: #fff8c0;
+  border: 2px solid #999;
+  box-shadow: 2px 2px #555, -2px -2px #fff;
+  padding: 10px;
+  transition: bottom 0.5s cubic-bezier(0.68,-0.55,0.27,1.55);
+  z-index: 9998;
+  display: flex;
+  flex-direction: column;
+}
+
+#notes-content {
+  flex: 1;
+  overflow-y: auto;
+  border: 1px dashed #aaa;
+  padding: 5px;
+  background: #fffde0;
+}
+
+
+#notes h3 {
+  text-align: center;
+  margin-bottom: 10px;
+}
