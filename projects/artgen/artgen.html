@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mathy Circle Fractal Flowers</title>
+  <link rel="stylesheet" href="ui.css">
+</head>
+<body>
+  <!-- Top Mac Bar -->
+  <div id="topbar">
+    <div class="menu">
+      <span>File</span>
+      <div class="dropdown">
+        <div>New</div>
+        <div>Save</div>
+        <div>Quit</div>
+      </div>
+    </div>
+    <div class="menu">
+      <span>Edit</span>
+      <div class="dropdown">
+        <div>Undo</div>
+        <div>Redo</div>
+        <div>Clear</div>
+      </div>
+    </div>
+    <div class="menu">
+      <span>Window</span>
+      <div class="dropdown">
+        <div>Minimize</div>
+        <div>Close All</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Canvas for art -->
+  <canvas id="artCanvas"></canvas>
+
+<div id="notes-toggle">?</div>
+<div id="notes">
+  <h3>notes</h3>
+  <div id="notes-content">
+
+    <p>alright ngl, this is low effort but here’s the explanation:</p>
+
+    <h1>generative math-based nature sketch</h1>
+    <p>this canvas sketch has spiral flowers, recursive trees, swaying plants, flickering stars, and floating fireflies. it uses math formulas to make everything move smoothly and look alive.</p>
+
+    <h2>the canvas</h2>
+    <code>&lt;canvas id="artCanvas"&gt;&lt;/canvas&gt;</code>
+    <p>main drawing area for all the animation.</p>
+
+    <h2>key javascript concepts</h2>
+
+    <h3>1. setup & utilities</h3>
+    <p>grab the canvas and 2d context, resize it, track frame count and base hue:</p>
+    <pre><code>const canvas = document.getElementById('artCanvas');
+const ctx = canvas.getContext('2d');
+let frame = 0;
+let hue = 220;
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight - 26;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+function pastelHue(offset = 0, sat = 60, light = 75, alpha = 0.5) {
+  return `hsla(${(hue + offset) % 360}, ${sat}%, ${light}%, ${alpha})`;
+}</code></pre>
+
+    <h3>2. spiral flowers</h3>
+    <p>arranged with the golden angle (137.5°) and radius grows as <code>r = a * sqrt(i) * progress</code> for a blooming effect:</p>
+    <pre><code>class SpiralFlower {
+  constructor(x, y, petals, a=4, b=4){ ... }
+  draw(){
+    for(let i=0;i&lt;this.petals;i++){
+      const theta = i * 137.5 * Math.PI/180;
+      const r = this.a * Math.sqrt(i) * (Math.sin(this.progress*Math.PI/2)+0.2);
+      const px = this.x + r * Math.cos(theta);
+      const py = this.y + r * Math.sin(theta);
+      ctx.fillStyle = pastelHue(i*2,50,70,0.7);
+      ctx.beginPath();
+      ctx.arc(px, py, 1.5 + Math.sin(i*0.1 + frame/20), 0, Math.PI*2);
+      ctx.fill();
+    }
+    if(this.progress &lt; 1) this.progress += 0.01;
+  }
+}</code></pre>
+
+    <h3>3. trees (recursive)</h3>
+    <p>branches shrink each depth: <code>newLen = len * 0.7</code> and split at ±π/6:</p>
+    <pre><code>class Tree { ... 
+  draw() {
+    if(this.depth &lt;= 0) return;
+    const x2 = this.x + this.len * Math.cos(this.angle);
+    const y2 = this.y - this.len * Math.sin(this.angle);
+    ctx.strokeStyle = pastelHue(this.depth*30,60,50,0.6);
+    ctx.lineWidth = Math.max(0.8,this.depth*1.2);
+    ctx.beginPath();
+    ctx.moveTo(this.x,this.y);
+    ctx.lineTo(x2,y2);
+    ctx.stroke();
+    const newLen = this.len * 0.7;
+    const angleOffset = Math.PI/6;
+    new Tree(x2,y2,newLen,this.angle-angleOffset,this.depth-1).draw();
+    new Tree(x2,y2,newLen,this.angle+angleOffset,this.depth-1).draw();
+  }
+}</code></pre>
+
+    <h3>4. plants & swaying grass</h3>
+    <p>sway sinusoidally using:</p>
+    <pre><code>swayX = Math.sin(frame/30 + phase) * amplitude</code></pre>
+
+    <h3>5. stars flicker</h3>
+    <p>alpha oscillates with sine for a gentle twinkle:</p>
+    <pre><code>alpha = baseAlpha * (0.5 + 0.5 * Math.sin(frame/50 + phase))</code></pre>
+
+    <h3>6. fireflies float</h3>
+    <p>harmonic motion along x and y:</p>
+    <pre><code>x = x0 + Math.sin(frame*freq + phase)*50;
+y = y0 + Math.cos(frame*freq + phase)*30;</code></pre>
+
+    <h2>7. animation loop</h2>
+    <p>draw gradient background, then all objects, increment hue for subtle color shift, request next frame:</p>
+    <pre><code>function animate() {
+  frame++;
+  const gradient = ctx.createLinearGradient(0,0,0,canvas.height);
+  gradient.addColorStop(0,'rgba(10,10,30,0.95)');
+  gradient.addColorStop(1,'rgba(20,20,50,0.95)');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  stars.forEach(s =&gt; s.draw(frame));
+  fireflies.forEach(f =&gt; f.draw(frame));
+  flowers.forEach(f =&gt; f.draw());
+  trees.forEach(t =&gt; t.draw());
+  plants.forEach(p =&gt; p.draw(frame));
+
+  hue += 0.05;
+  requestAnimationFrame(animate);
+}
+animate();</code></pre>
+
+    <h2>what’s happening</h2>
+    <ul>
+      <li>flowers bloom in golden angle spirals</li>
+      <li>trees branch recursively with shrinking length</li>
+      <li>plants sway sinusoidally</li>
+      <li>stars flicker smoothly</li>
+      <li>fireflies float in harmonic motion</li>
+      <li>everything animates using formulas instead of random jitter for natural motion</li>
+    </ul>
+
+    fun fact: this project was scrapped from the first one because!!! <br>
+
+    <ul>
+      <li>didn't have enough time</li>
+      <li>i didn't know how to execute the formulas (well they aren't formulas tbf</li>
+      <li>i not smart 😢😢😢😢</li>
+    </ul>
+
+  </div>
+</div>
+
+
+  <script src="arthandler.js"></script>
+    <script>
+    // ----- NOTES TOGGLE -----
+(function(){
+  const notesToggle = document.getElementById("notes-toggle");
+  const notes = document.getElementById("notes");
+  if (!notesToggle || !notes) return; // safety check
+
+  let notesOpen = false;
+  notesToggle.addEventListener("click", ()=>{
+    notesOpen = !notesOpen;
+    notes.style.bottom = notesOpen ? "10px" : "-320px";
+  });
+})();
+
+  </script>
+</body>
+</html>
