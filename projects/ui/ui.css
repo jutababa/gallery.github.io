@@ -1,0 +1,214 @@
+:root{
+  --bg-color: #0b0b0f;
+  --glass-tint: 0.08;
+  --glass-blur: 28px;
+  --shine-duration: 6s;
+  --bevel: 10px;
+  --reflect: 1;
+  --liquid-intensity: 1;
+  --ui-radius: 14px;
+}
+
+/* base reset */
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:Inter, "SF Pro Display", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial;background:var(--bg-color);color:#fff;overflow:hidden}
+
+/* canvas covers background */
+.liquid-canvas{position:fixed;left:0;top:0;width:100%;height:100%;z-index:0;display:block}
+
+/* OS shell */
+.os-shell{position:relative;z-index:6;min-height:100vh;display:flex;flex-direction:column;align-items:stretch}
+
+/* topbar */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;gap:8px;height:52px;backdrop-filter:blur(6px);background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));box-shadow:0 6px 22px rgba(0,0,0,0.5);z-index:8}
+.icon-btn{background:transparent;border:1px solid rgba(255,255,255,0.04);color:#fff;padding:6px 9px;border-radius:8px;cursor:pointer}
+.top-center{text-align:center;flex:1;color:rgba(255,255,255,0.85)}
+
+/* desktop area */
+.desktop{position:relative;display:flex;flex-direction:column;flex:1;padding:10px 12px 80px;z-index:6}
+
+/* shortcuts grid */
+.shortcuts{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;padding:18px}
+.shortcut{width:96px;height:96px;border-radius:12px;background:rgba(255,255,255,0.02);display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid rgba(255,255,255,0.02);transition:all .18s;backdrop-filter:blur(4px)}
+.shortcut:hover{transform:translateY(-6px);box-shadow:0 20px 40px rgba(0,0,0,0.4)}
+
+/* dock */
+.dock{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));backdrop-filter:blur(8px);box-shadow:0 18px 40px rgba(0,0,0,0.6);z-index:9}
+.dock-item{width:54px;height:46px;border-radius:10px;border:0;background:rgba(255,255,255,0.04);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center}
+.dock-item:hover{transform:translateY(-6px);background:rgba(255,255,255,0.08)}
+
+/* window / panel */
+.window{
+  position:absolute;width:360px;min-height:120px;border-radius:12px;left:60px;top:120px;
+  background:rgba(255,255,255,var(--glass-tint));
+  backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+  box-shadow:
+    0 40px 80px rgba(0,0,0,0.6),
+    inset 0 8px 30px rgba(255,255,255,0.02),
+    inset 0 calc(var(--bevel) * 1px) calc(var(--bevel) * 1px) rgba(255,255,255,0.02),
+    inset 0 calc(-1 * var(--bevel) * 1px) calc(var(--bevel) * 2px) rgba(0,0,0,0.35);
+  transition:transform .18s cubic-bezier(.2,.9,.2,1), box-shadow .2s, opacity .2s;
+  overflow:hidden;z-index:6;opacity:0;transform:translateY(10px) scale(.99);pointer-events:none;
+}
+.window.open{opacity:1;transform:none;pointer-events:auto}
+.winbar{height:44px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid rgba(255,255,255,0.03);cursor:grab}
+.winbar:active{cursor:grabbing}
+.win-title{font-weight:600}
+.win-controls{display:flex;gap:6px}
+.win-controls button{background:transparent;border:0;color:rgba(255,255,255,0.85);cursor:pointer;padding:6px;border-radius:8px}
+.win-controls button:hover{background:rgba(255,255,255,0.03)}
+.win-body{padding:14px;display:flex;flex-direction:column;gap:12px}
+
+/* specialized control panel style */
+.control-panel{width:420px;left:auto;right:48px;top:96px}
+.control-panel .grid{display:grid;grid-template-columns:repeat(2,minmax(120px,1fr));gap:12px}
+.control{display:flex;flex-direction:column;gap:8px}
+.control label{font-size:13px;color:rgba(255,255,255,0.95)}
+input[type="range"]{width:100%;-webkit-appearance:none;height:8px;background:linear-gradient(90deg, rgba(255,255,255,0.18), rgba(255,255,255,0.9));border-radius:8px}
+input[type="range"]::-webkit-slider-thumb{appearance:none;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 4px 12px rgba(0,0,0,0.5)}
+input[type="color"]{height:40px;width:100%;border-radius:8px;border:none;padding:4px}
+
+/* form fields */
+.field input[type="text"], .field input[type="email"]{padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.05);background:rgba(255,255,255,0.02);color:#fff}
+.btn{background:rgba(255,255,255,0.06);border:0;padding:8px 12px;border-radius:8px;color:#fff;cursor:pointer}
+.btn:hover{transform:translateY(-3px)}
+
+/* gallery thumbs */
+.gallery{display:flex;gap:10px;flex-wrap:wrap}
+.thumb{width:120px;height:90px;border-radius:8px;background:linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));display:flex;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(0,0,0,0.5)}
+
+/* small text */
+.muted{color:rgba(255,255,255,0.75);font-size:13px}
+.small{font-size:12px}
+
+/* taskbar footer */
+.taskbar{position:fixed;left:0;right:0;bottom:0;height:56px;display:flex;align-items:center;justify-content:space-between;padding:8px 18px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));backdrop-filter:blur(8px);box-shadow:0 -6px 24px rgba(0,0,0,0.45);z-index:9}
+
+/* open animation helper */
+.window.open{animation:popIn .28s cubic-bezier(.2,.9,.2,1)}
+@keyframes popIn{from{transform:translateY(12px) scale(.995);opacity:0} to{transform:none;opacity:1}}
+
+/* small responsiveness */
+@media (max-width:900px){
+  .control-panel{position:fixed;left:12px;right:12px;top:64px;width:auto}
+  .window{width:88%;left:6%}
+  .dock{left:12%;transform:none}
+}
+
+#notes {
+  position: fixed;
+  right: 20px;
+  bottom: -340px;
+  width: fit-content;
+  height: 300px;
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(15px);
+  box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+  transition: all 0.4s ease;
+  padding: 15px;
+  color: #fff;
+  overflow: hidden;
+}
+
+#notes-toggle {
+  position: fixed;
+  right: 25px;
+  bottom: 25px;
+  background: rgba(255,255,255,0.2);
+  backdrop-filter: blur(10px);
+  color: white;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 20px;
+  text-align: center;
+  line-height: 40px;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  transition: all 0.3s ease;
+}
+#notes-toggle:hover {
+  background: rgba(255,255,255,0.35);
+}
+
+#notes-box {
+  width: 100%;
+  height: 85%;
+  resize: none;
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  outline: none;
+  color: #fff;
+  font-family: "Courier New", monospace;
+  font-size: 0.9rem;
+  border-radius: 10px;
+  padding: 8px;
+}
+
+#save-msg {
+  position: absolute;
+  bottom: 8px;
+  left: 12px;
+  font-size: 0.8rem;
+  color: #aaffaa;
+  transition: opacity 0.3s ease;
+}
+
+#notes {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: fit-content;
+  max-height: 60vh;
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 12px;
+  padding: 14px 16px;
+  color: #fff;
+  font-family: monospace;
+  font-size: 14px;
+  box-shadow: 0 6px 22px rgba(0,0,0,0.4);
+  overflow-y: auto;
+  z-index: 999;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+#notes h3 {
+  margin-top: 0;
+  font-weight: 600;
+  font-size: 16px;
+  text-transform: lowercase;
+  opacity: 0.8;
+}
+
+#notes-content p {
+  line-height: 1.4em;
+  margin-bottom: 0.8em;
+}
+
+#notes-content code, #notes-content pre {
+  background: rgba(255,255,255,0.06);
+  padding: 3px 6px;
+  border-radius: 6px;
+  display: inline-block;
+  font-family: monospace;
+  color: #aaf;
+}
+
+#notes-content pre {
+  display: block;
+  padding: 8px;
+  white-space: pre-wrap;
+  margin-bottom: 1em;
+}
+
+#notes {
+  display: none; /* hide by default */
+}
+
+#notes.open {
+  display: block; /* show when toggled */
+}
