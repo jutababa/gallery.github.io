@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Soft-Body Fluid Gallery</title>
+<style>
+  html, body { margin:0; padding:0; overflow:hidden; height:100%; font-family:sans-serif; background:#111; }
+  canvas { display:block; }
+  #ui {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background: rgba(0,0,0,0.3);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-size: 14px;
+    z-index: 10;
+    backdrop-filter: blur(8px);
+  }
+</style>
+</head>
+<body>
+<div id="ui">i htea this tonef with me haeart...!!1...okay but this took under 3 minutes this is not impressive 😭
+</div>
+<canvas id="fluidCanvas"></canvas>
+<script src="https://cdn.jsdelivr.net/npm/matter-js@0.19.0/build/matter.min.js"></script>
+<script>
+const { Engine, World, Bodies, Body, Constraint, Mouse, MouseConstraint, Composite } = Matter;
+
+// --- Engine setup ---
+const engine = Engine.create();
+const world = engine.world;
+world.gravity.y = 0.8;
+
+// --- Canvas ---
+const canvas = document.getElementById('fluidCanvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+// --- Soft-body setup ---
+const particles = [];
+const constraints = [];
+const cols = 18;
+const rows = 12;
+const spacing = 30;
+const startX = canvas.width/2 - cols*spacing/2;
+const startY = 100;
+
+for(let y=0; y<rows; y++){
+  for(let x=0; x<cols; x++){
+    const p = Bodies.circle(startX + x*spacing, startY + y*spacing, 10, {
+      friction:0.02,
+      restitution:0.8,
+      density:0.001,
+      render: { fillStyle:'#0af' }
+    });
+    particles.push(p);
+    World.add(world, p);
+  }
+}
+
+// Connect particles
+function particleAt(x,y){ return particles[y*cols + x]; }
+for(let y=0; y<rows; y++){
+  for(let x=0; x<cols; x++){
+    if(x < cols-1) constraints.push(Constraint.create({ bodyA:particleAt(x,y), bodyB:particleAt(x+1,y), stiffness:0.2, length:spacing }));
+    if(y < rows-1) constraints.push(Constraint.create({ bodyA:particleAt(x,y), bodyB:particleAt(x,y+1), stiffness:0.2, length:spacing }));
+  }
+}
+World.add(world, constraints);
+
+// Boundaries
+const walls = [
+  Bodies.rectangle(canvas.width/2, canvas.height+10, canvas.width*2, 20, { isStatic:true }),
+  Bodies.rectangle(canvas.width/2, -10, canvas.width*2, 20, { isStatic:true }),
+  Bodies.rectangle(-10, canvas.height/2, 20, canvas.height*2, { isStatic:true }),
+  Bodies.rectangle(canvas.width+10, canvas.height/2, 20, canvas.height*2, { isStatic:true })
+];
+World.add(world, walls);
+
+// Mouse
+const mouse = Mouse.create(canvas);
+const mouseConstraint = MouseConstraint.create(engine, {
+  mouse: mouse,
+  constraint: { stiffness:0.2, render:{ visible:false } }
+});
+World.add(world, mouseConstraint);
+
+// Scroll offset
+window.addEventListener('wheel', e => {
+  const dy = -e.deltaY*0.3;
+  particles.forEach(p => Body.translate(p, { x:0, y:dy }));
+});
+
+// --- Draw soft-body with smooth curves ---
+function drawSoftBody() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  // Background gradient
+  const grad = ctx.createLinearGradient(0,0,0,canvas.height);
+  grad.addColorStop(0, '#111');
+  grad.addColorStop(1, '#222');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  // Draw mesh with bezier smoothing
+  ctx.fillStyle = 'rgba(50,200,255,0.4)';
+  for(let y=0; y<rows-1; y++){
+    for(let x=0; x<cols-1; x++){
+      const p1 = particleAt(x,y).position;
+      const p2 = particleAt(x+1,y).position;
+      const p3 = particleAt(x+1,y+1).position;
+      const p4 = particleAt(x,y+1).position;
+
+      ctx.beginPath();
+      ctx.moveTo(p1.x, p1.y);
+      ctx.bezierCurveTo(p2.x, p2.y, p3.x, p3.y, p4.x, p4.y);
+      ctx.closePath();
+      ctx.fill();
+    }
+  }
+
+  // Optional: particles
+  ctx.fillStyle = 'rgba(255,255,255,0.5)';
+  particles.forEach(p => {
+    ctx.beginPath();
+    ctx.arc(p.position.x, p.position.y, 4, 0, Math.PI*2);
+    ctx.fill();
+  });
+}
+
+// --- Floating background particles ---
+const floaters = [];
+for(let i=0;i<50;i++){
+  floaters.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, r:Math.random()*2+1, vx:Math.random()*0.3-0.15, vy:Math.random()*0.3-0.15});
+}
+function drawFloaters(){
+  ctx.fillStyle='rgba(255,255,255,0.1)';
+  floaters.forEach(f=>{
+    f.x+=f.vx; f.y+=f.vy;
+    if(f.x<0) f.x=canvas.width;
+    if(f.x>canvas.width) f.x=0;
+    if(f.y<0) f.y=canvas.height;
+    if(f.y>canvas.height) f.y=0;
+    ctx.beginPath();
+    ctx.arc(f.x,f.y,f.r,0,Math.PI*2);
+    ctx.fill();
+  });
+}
+
+// --- Animation ---
+(function animate(){
+  Engine.update(engine, 16.7);
+  drawFloaters();
+  drawSoftBody();
+  requestAnimationFrame(animate);
+})();
+
+// Responsive canvas
+window.addEventListener('resize', ()=>{
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+</script>
+</body>
+</html>
