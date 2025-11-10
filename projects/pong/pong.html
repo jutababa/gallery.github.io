@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pong Tournament</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- matter is optional (kept for compatibility if you change later) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+</head>
+<body>
+  <div id="overlay">
+    <h1>pong haha</h1>
+
+
+    
+
+    <div class="input-area">
+      <input type="text" id="player1" placeholder="Player 1 Name (WASD)">
+      <input type="text" id="player2" placeholder="Player 2 Name (Arrow Keys)">
+      <div class="row">
+        <label for="mode">Mode:</label>
+        <select id="mode">
+          <option value="easy">Easy</option>
+          <option value="normal" selected>Normal</option>
+          <option value="hard">Hard</option>
+        </select>
+      </div>
+      <div class="row">
+        <label for="rounds">Rounds to Win:</label>
+        <input id="rounds" type="number" min="1" max="15" value="9" style="width:70px;text-align:center;">
+      </div>
+      <div class="row">
+        <button id="startBtn">Start Tournament</button>
+        <button id="demoBtn">Quick Demo</button>
+      </div>
+    </div>
+
+    <div class="hint">Press <strong>P</strong> to Pause / Resume during match</div>
+
+    <button id="backBtn" onclick="window.location.href='../../index.html'">← Back</button>
+  </div>
+
+  <canvas id="gameCanvas"></canvas>
+
+  <div id="uiTop">
+    <div id="scoreboard">
+      <span id="name1">Player 1</span>
+      <div id="scoreWrap"><span id="score1">0</span> - <span id="score2">0</span></div>
+      <span id="name2">Player 2</span>
+    </div>
+    <div id="alerts"></div>
+    
+  </div>
+
+  <div id="notes-toggle">?</div>
+
+<div id="notes">
+  <h3>Notes</h3>
+  <div id="notes-content">
+    hello guys well uh this one is okay!!1!
+  </div>
+</div>
+
+
+
+
+
+  <script src="p.js"></script>
+</body>
+</html>
