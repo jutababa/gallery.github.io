@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Liquid Glass OS</title>
+  <link rel="stylesheet" href="ui.css" />
+</head>
+<body>
+  <!-- liquid background canvas -->
+  <canvas id="liquidCanvas" class="liquid-canvas"></canvas>
+
+  <!-- OS shell -->
+  <div class="os-shell" id="osShell">
+
+    <!-- top bar with back button and status -->
+    <header class="topbar">
+      <div class="top-left">
+        <button id="backBtn" class="icon-btn" title="Back">⤺ Back</button>
+      </div>
+      <div class="top-center">liquidglass</div>
+      <div class="top-right">
+        <div class="sys-info">demo</div>
+      </div>
+    </header>
+
+    <!-- main desktop area -->
+    <main class="desktop" id="desktop">
+      <!-- pre-rendered shortcuts -->
+      <div class="shortcuts">
+        <div class="shortcut" data-open="panel1">Sliders</div>
+        <div class="shortcut" data-open="panel2">Form</div>
+        <div class="shortcut" data-open="panel3">Gallery</div>
+        <div class="shortcut" data-open="panel4">About</div>
+      </div>
+
+      <!-- dock / quick launch -->
+      <nav class="dock">
+        <button class="dock-item" data-open="panel1" title="Sliders">🎚</button>
+        <button class="dock-item" data-open="panel2" title="Form">✉️</button>
+        <button class="dock-item" data-open="panel3" title="Gallery">🖼️</button>
+        <button class="dock-item" data-open="panel4" title="About">ℹ️</button>
+        <div class="dock-spacer"></div>
+        <button class="dock-item toggle-theme" id="toggleTheme" title="Toggle theme">🌓</button>
+      </nav>
+
+      <!-- windows / panels (these are draggable windows) -->
+      <div class="window" id="panel1" data-title="Sliders & Toggles">
+        <div class="winbar">
+          <div class="win-title">Sliders & Toggles</div>
+          <div class="win-controls">
+            <button class="minimize">—</button>
+            <button class="close">✕</button>
+          </div>
+        </div>
+        <div class="win-body">
+          <label class="row">
+            <span>Volume</span>
+            <input type="range" min="0" max="100" value="40" />
+          </label>
+          <label class="row">
+            <span>Contrast</span>
+            <input type="range" min="0" max="100" value="30" />
+          </label>
+          <label class="row">
+            <span>Enable FX</span>
+            <input type="checkbox" />
+          </label>
+          <div class="muted small">Drag the window. Minimize to dock. Use Back to close last opened.</div>
+        </div>
+      </div>
+
+      <div class="window" id="panel2" data-title="Form">
+        <div class="winbar">
+          <div class="win-title">Contact Form</div>
+          <div class="win-controls">
+            <button class="minimize">—</button>
+            <button class="close">✕</button>
+          </div>
+        </div>
+        <div class="win-body">
+          <label class="field">
+            <span>Name</span>
+            <input type="text" placeholder="Artist name" />
+          </label>
+          <label class="field">
+            <span>Email</span>
+            <input type="email" placeholder="you@domain.com" />
+          </label>
+          <label class="field small">
+            <span>Subscribe</span>
+            <input type="checkbox" />
+          </label>
+          <button class="btn submit">Submit</button>
+        </div>
+      </div>
+
+      <div class="window" id="panel3" data-title="Gallery">
+        <div class="winbar">
+          <div class="win-title">Gallery</div>
+          <div class="win-controls">
+            <button class="minimize">—</button>
+            <button class="close">✕</button>
+          </div>
+        </div>
+        <div class="win-body gallery">
+          <div class="thumb">A</div>
+          <div class="thumb">B</div>
+          <div class="thumb">C</div>
+          <div class="thumb">D</div>
+        </div>
+      </div>
+
+      <div class="window" id="panel4" data-title="About">
+        <div class="winbar">
+          <div class="win-title">About</div>
+          <div class="win-controls">
+            <button class="minimize">—</button>
+            <button class="close">✕</button>
+          </div>
+        </div>
+        <div class="win-body">
+          <h3>Liquid Glass OS</h3>
+          <p class="muted">Use controls to tweak visuals, it's peak right?</p>
+        </div>
+      </div>
+
+      <!-- main control center window (always accessible) -->
+      <div class="window control-panel" id="controlPanel" data-title="Control Center">
+        <div class="winbar">
+          <div class="win-title">Control Center</div>
+          <div class="win-controls">
+            <button class="minimize">—</button>
+            <button class="close">✕</button>
+          </div>
+        </div>
+
+        <div class="win-body">
+          <div class="grid">
+            <div class="control">
+              <label>Background color</label>
+              <input type="color" id="bgColor" value="#0b0b0f" />
+            </div>
+
+            <div class="control">
+              <label>Glass tint</label>
+              <input type="range" id="tintRange" min="0" max="255" value="160" />
+            </div>
+
+            <div class="control">
+              <label>Blur</label>
+              <input type="range" id="blurRange" min="0" max="50" value="28" />
+            </div>
+
+            <div class="control">
+              <label>Gloss speed</label>
+              <input type="range" id="shineSpeed" min="1" max="12" value="6" />
+            </div>
+
+            <div class="control">
+              <label>Bevel (depth)</label>
+              <input type="range" id="bevel" min="0" max="30" value="10" />
+            </div>
+
+            <div class="control">
+              <label>Reflection</label>
+              <input type="checkbox" id="reflectionToggle" checked />
+            </div>
+
+            <div class="control">
+              <label>Liquid intensity</label>
+              <input type="range" id="liquidIntensity" min="0" max="2" step="0.1" value="1" />
+            </div>
+          </div>
+
+          <div style="margin-top:12px">
+            <button id="resetBtn" class="btn">Reset</button>
+            <button id="backBtn2" class="btn">Back</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="taskbar">
+      <div class="task-left">LiquidGlass OS</div>
+      <div class="task-center" id="taskCenter">Desktop</div>
+      <div class="task-right" id="taskRight">Ready</div>
+        <!-- NOTES SECTION -->
+  <div id="notes-toggle">?</div>
+<div id="notes">
+  <h3>notes</h3>
+  <div id="notes-content">
+    <p>alright so here’s what’s actually going on</p>
+
+    <p>first off the css is doing the heavy lifting for the vibe. it sets up that glassy ui thing using a bunch of custom variables like</p>
+
+    <pre><code>--bg-color  
+--glass-blur  
+--glass-tint  
+--ui-radius  
+</code></pre>
+
+    <p>and stuff like that. these just control how soft or shiny everything feels. the js messes with those live so when you drag sliders or change color it updates instantly.</p>
+
+    <p>the layout is full screen, no scrollbars, and there’s this canvas in the back that moves like liquid light behind everything. that’s the <code>liquid-canvas</code> thing. it’s basically a blob renderer that moves slow and mixes color gradients together to look like glass reflections.</p>
+
+    <p>then the os shell sits on top. it’s got a top bar with “file” and all, a dock at the bottom, and draggable windows floating in the middle. all of them use blur + transparent backgrounds so you get that layered glass effect. shadows make them pop a bit.</p>
+
+    <p>each window has a header (so you can drag it), some buttons (close, minimize), and a body for content. the <code>.open</code> class triggers the little pop animation. when you open a window, js bumps its z-index so it floats above others, and when you close it, it fades out.</p>
+
+    <p>the js keeps track of a whole fake system state. it remembers which windows are open, which desktop you’re on, where stuff is, even if you reload. it uses <code>localStorage</code> to save all that.</p>
+
+    <p>dragging and resizing are handled with pointer events — when you click the header, it follows your mouse, snapping to a 16px grid so it feels clean. bottom right corner has a hidden resize handle you can drag to change the size.</p>
+
+    <p>the dock icons just call <code>toggleWindow()</code> for their respective windows. click once opens or restores, click again minimizes. the focus function bumps z-index again so whatever you clicked is now on top.</p>
+
+    <p>keyboard shortcuts are baked in too. <code>Escape</code> closes the last active window, <code>Ctrl+B</code> goes back, <code>Ctrl+1</code> or <code>Ctrl+2</code> switches desktops. and it updates the dock/taskbar icons so you can tell what’s open.</p>
+
+    <p>there’s also a mini notification system that makes those little glassy toasts pop up in the corner with titles and fade away.</p>
+
+    <p>the liquid canvas thing in the background runs on a <code>requestAnimationFrame</code> loop. it spawns these “blobs” that drift around using a mix of sine and cosine movement. clicking adds “ripples” that expand and fade out, which is what gives the illusion of glass waves. color of the blobs matches whatever background color the css var is set to.</p>
+
+    <p>so yeah basically it’s like a tiny fake desktop made with pure css + js. glass windows, floating icons, a memory system, draggable stuff, glowing dock, and a living animated background that reacts to clicks. if you wanted to actually finish it, you’d just need to finish the blob drawing part that got cut off at the end — that’s where the background light blending happens.</p>
+  </div>
+</div>
+
+    </footer>
+  </div>
+
+
+
+  <script src="ui.js"></script>
+</body>
+</html>
