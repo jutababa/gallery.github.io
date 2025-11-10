@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>physiber</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Matter.js -->
+  <script src="https://cdn.jsdelivr.net/npm/matter-js@0.19.0/build/matter.min.js"></script>
+</head>
+<body>
+
+<div id="topbar">
+  <div class="menu-item" id="fileMenu">
+    File
+    <div class="dropdown">
+      <div class="dropdown-item" id="quitBtn">Quit</div>
+    </div>
+  </div>
+</div>
+
+    <!-- NOTES SYSTEM -->
+<div id="notes-toggle">?</div>
+<div id="notes">
+  <h3>Notes</h3>
+  <div id="notes-content">
+    so the logic starts like this:<br><br>
+
+<code>
+const { Engine, Render, Runner, World, Bodies, Body, Constraint, Mouse, MouseConstraint } = Matter;<br>
+const engine = Engine.create();<br>
+const world = engine.world;<br>
+</code><br>
+
+this basically sets up the physics brain. <code>Engine.create()</code> is what calculates all the motion and forces. then <code>Render.create()</code> draws everything to the screen, and <code>Runner.run()</code> keeps it updating every frame.<br><br>
+
+after that, i make a canvas and a second overlay canvas, like:<br><br>
+
+<code>
+const render = Render.create({<br>
+&nbsp;&nbsp;element: document.body,<br>
+&nbsp;&nbsp;engine,<br>
+&nbsp;&nbsp;options: { width: window.innerWidth, height: window.innerHeight, wireframes: false }<br>
+});<br>
+Render.run(render);<br>
+</code><br>
+
+the first one shows the physical objects, while the overlay canvas (using <code>getContext("2d")</code>) draws outlines, previews, and highlights (stuff that doesn’t affect physics but makes the editor feel alive)<br><br>
+
+then i add the world boundaries:<br><br>
+
+<code>
+const walls = [<br>
+&nbsp;&nbsp;Bodies.rectangle(width/2, height, width, 50, { isStatic: true }),<br>
+&nbsp;&nbsp;Bodies.rectangle(width/2, 0, width, 50, { isStatic: true }),<br>
+&nbsp;&nbsp;Bodies.rectangle(0, height/2, 50, height, { isStatic: true }),<br>
+&nbsp;&nbsp;Bodies.rectangle(width, height/2, 50, height, { isStatic: true })<br>
+];<br>
+World.add(world, walls);<br>
+</code><br>
+
+that just makes invisible barriers so nothing falls off the screen.<br><br>
+
+next, the tool system. i have a variable like:<br><br>
+
+<code>let currentTool = 'none';</code><br><br>
+
+and when you click the “Box” or “Circle” button, it changes that variable. the logic for creating stuff looks like:<br><br>
+
+<code>
+canvas.addEventListener('mousedown', e => {<br>
+&nbsp;&nbsp;if (currentTool === 'box') startBox(e);<br>
+&nbsp;&nbsp;if (currentTool === 'circle') startCircle(e);<br>
+});<br>
+canvas.addEventListener('mouseup', e => {<br>
+&nbsp;&nbsp;if (currentTool === 'box') finishBox(e);<br>
+&nbsp;&nbsp;if (currentTool === 'circle') finishCircle(e);<br>
+});<br>
+</code><br>
+
+so it tracks your drag from start to end and creates a new Matter.js body using those coordinates. for example:<br><br>
+
+<code>
+function finishBox(e) {<br>
+&nbsp;&nbsp;const width = Math.abs(e.x - startX);<br>
+&nbsp;&nbsp;const height = Math.abs(e.y - startY);<br>
+&nbsp;&nbsp;const box = Bodies.rectangle((e.x + startX)/2, (e.y + startY)/2, width, height);<br>
+&nbsp;&nbsp;World.add(world, box);<br>
+}<br>
+</code><br>
+
+if you hold Shift, it keeps the proportions even so you get a perfect square or circle (works with square only)<br><br>
+
+when you select something, it uses this bit:<br><br>
+
+<code>
+const body = Matter.Query.point(world.bodies, { x: mouse.x, y: mouse.y })[0];<br>
+if (body) selectedBody = body;<br>
+</code><br>
+
+that checks what shape is under your cursor. once selected, the inspector panel can modify it:<br><br>
+
+<code>
+Body.setPosition(selectedBody, { x: newX, y: newY });<br>
+Body.setAngle(selectedBody, newAngle);<br>
+Body.scale(selectedBody, scaleX, scaleY);<br>
+</code><br>
+
+so every change in the input instantly updates the physics object.<br><br>
+
+for constraints (springs/ropes), i track two clicks:<br>
+one on the first body and one on the second, then:<br><br>
+
+<code>
+const constraint = Constraint.create({<br>
+&nbsp;&nbsp;bodyA: firstBody,<br>
+&nbsp;&nbsp;bodyB: secondBody,<br>
+&nbsp;&nbsp;stiffness: 0.02,<br>
+&nbsp;&nbsp;length: distance<br>
+});<br>
+World.add(world, constraint);<br>
+</code><br>
+
+so now they’re physically linked.<br><br>
+
+then i’ve got a draw loop for the overlay canvas:<br><br>
+
+<code>
+function drawOverlay() {<br>
+&nbsp;&nbsp;overlayCtx.clearRect(0, 0, width, height);<br>
+&nbsp;&nbsp;if (selectedBody) drawHighlight(selectedBody);<br>
+&nbsp;&nbsp;constraints.forEach(drawConstraint);<br>
+&nbsp;&nbsp;if (isDrawingShape) drawPreview();<br>
+}<br>
+</code><br>
+
+this is all visual, it doesn’t affect the physics engine, it just helps you see what’s being edited.<br><br>
+
+finally, the game loop runs continuously:<br><br>
+
+<code>Runner.run(engine);</code><br><br>
+
+Matter.js does all the physics (gravity, collision, friction), while my code just handles user input, drawing, and managing state.<br><br>
+
+so logically, the code goes:<br>
+<strong>engine setup → render setup → mouse input → create/edit bodies → update overlay → repeat each frame.</strong><br>
+
+  </div>
+</div>
+  <div id="ui">
+
+
+    <div id="titlebar">Physiber</div>
+    <div id="toolbar">
+      <button class="tool-btn active" data-tool="none">Select</button>
+      <button class="tool-btn" data-tool="box">Box</button>
+      <button class="tool-btn" data-tool="circle">Circle</button>
+      <button class="tool-btn" data-tool="constraint">Constraint</button>
+
+      <div class="divider"></div>
+
+      <label class="color-label">Color <input type="color" id="colorPicker" value="#87b7ff"></label>
+
+      <div class="divider"></div>
+
+      <label class="small">Constraint: 
+        <select id="constraintType">
+          <option value="spring">Spring (bouncy)</option>
+          <option value="rope">Rope (stiff)</option>
+        </select>
+      </label>
+
+      <label class="small">Stiffness
+        <input id="constraintStiff" type="range" min="0.02" max="1" step="0.02" value="0.2">
+      </label>
+
+      <label class="small">Length
+        <input id="constraintLen" type="number" min="0" step="1" value="100" style="width:72px">
+      </label>
+
+      <div class="spacer"></div>
+
+      <button id="clearBtn">Clear</button>
+    </div>
+  </div>
+
+  <!-- floating inspector (draggable) -->
+  <div id="inspector" class="panel">
+    <div class="panel-title">Properties</div>
+    <div class="panel-body">
+      <div><strong>Selected:</strong> <span id="selName">none</span></div>
+      <label>X: <input id="propX" type="number" step="1"></label>
+      <label>Y: <input id="propY" type="number" step="1"></label>
+      <label>Angle: <input id="propAngle" type="number" step="0.1"></label>
+      <label>Scale X: <input id="propScaleX" type="number" step="0.01" min="0.01"></label>
+      <label>Scale Y: <input id="propScaleY" type="number" step="0.01" min="0.01"></label>
+      <label>Color: <input id="propColor" type="color"></label>
+      <label><input id="propAnchor" type="checkbox"> Anchor (freeze)</label>
+      <div style="margin-top:8px">
+        <button id="applyProps">Apply</button>
+        <button id="deleteObj" style="margin-left:6px">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- debug panel -->
+  <div id="debug" class="panel">
+    <div class="panel-title">Debug</div>
+    <div class="panel-body small">
+      <div>FPS: <span id="fps">0</span></div>
+      <div>Bodies: <span id="bodies">0</span></div>
+      <div>Constraints: <span id="cons">0</span></div>
+      <div>Tool: <span id="tool">none</span></div>
+      <div>Mouse: <span id="mouse">0,0</span></div>
+    </div>
+  </div>
+
+  <canvas id="world"></canvas>
+  <canvas id="overlay"></canvas>
+
+  <script src="chamber.js"></script>
+
+  <script>
+    // ----- NOTES TOGGLE -----
+(function(){
+  const notesToggle = document.getElementById("notes-toggle");
+  const notes = document.getElementById("notes");
+  if (!notesToggle || !notes) return; // safety check
+
+  let notesOpen = false;
+  notesToggle.addEventListener("click", ()=>{
+    notesOpen = !notesOpen;
+    notes.style.bottom = notesOpen ? "10px" : "-320px";
+  });
+})();
+
+  </script>
+</body>
+</html>
